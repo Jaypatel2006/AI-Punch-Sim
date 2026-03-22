@@ -4,6 +4,7 @@ import numpy as np
 from mediapipe.tasks import python
 from mediapipe.tasks.python import vision
 
+
 model_path = r"D:\college\AI_Project\models\pose_landmarker_heavy.task"
 
 BaseOptions = mp.tasks.BaseOptions
@@ -11,7 +12,7 @@ PoseLandmarker = mp.tasks.vision.PoseLandmarker
 PoseLandmarkerOptions = mp.tasks.vision.PoseLandmarkerOptions
 VisionRunningMode = mp.tasks.vision.RunningMode
 
-# Pose connections (same as official, but copied manually)
+
 POSE_CONNECTIONS = [
     (0,1),(1,2),(2,3),(3,7),
     (0,4),(4,5),(5,6),(6,8),
@@ -30,10 +31,28 @@ options = PoseLandmarkerOptions(
 
 cap = cv2.VideoCapture(0)
 
+
+def calculate_angle(p1, p2, p3):
+    p1 = np.array(p1)
+    p2 = np.array(p2)
+    p3 = np.array(p3)
+
+    v1 = p1 - p2   # vector from p2 → p1
+    v2 = p3 - p2   # vector from p2 → p3
+
+    
+    cos_theta = np.dot(v1, v2) / (np.linalg.norm(v1) * np.linalg.norm(v2))
+
+   
+    cos_theta = np.clip(cos_theta, -1.0, 1.0)
+
+    angle = np.degrees(np.arccos(cos_theta))
+    return angle
+
+
 def draw_landmarks(image, landmarks):
     h, w, _ = image.shape
-
-    # Draw connections
+    
     for a, b in POSE_CONNECTIONS:
         if a < len(landmarks) and b < len(landmarks):
             pa = landmarks[a]
@@ -44,7 +63,7 @@ def draw_landmarks(image, landmarks):
 
             cv2.line(image, (ax, ay), (bx, by), (0, 255, 0), 2)
 
-    # Draw keypoints
+    
     for lm in landmarks:
         x, y = int(lm.x * w), int(lm.y * h)
         cv2.circle(image, (x, y), 4, (0, 0, 255), -1)
