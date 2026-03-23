@@ -3,7 +3,7 @@ import mediapipe as mp
 import numpy as np
 from mediapipe.tasks import python
 from mediapipe.tasks.python import vision
-
+import matplotlib.pyplot as plt
 
 model_path = r"D:\college\AI_Project\models\pose_landmarker_heavy.task"
 
@@ -29,8 +29,15 @@ options = PoseLandmarkerOptions(
     running_mode=VisionRunningMode.IMAGE
 )
 
-cap = cv2.VideoCapture(0)
+cap = cv2.VideoCapture(1)
 
+minz = 10
+maxz = -10
+min_frame = 0
+max_frame = 0
+frame_no = 0
+min_angle = 180
+max_angle = 0
 
 def calculate_angle(p1, p2, p3):
     p1 = np.array(p1)
@@ -53,6 +60,9 @@ def calculate_angle(p1, p2, p3):
 def draw_landmarks(image, landmarks):
     h, w, _ = image.shape
     
+    
+
+
     for a, b in POSE_CONNECTIONS:
         if a < len(landmarks) and b < len(landmarks):
             pa = landmarks[a]
@@ -80,12 +90,48 @@ with PoseLandmarker.create_from_options(options) as landmarker:
         result = landmarker.detect(mp_image)
 
         if result.pose_landmarks:
-            draw_landmarks(frame, result.pose_landmarks[0])
+            landmarks = result.pose_landmarks[0]
+            draw_landmarks(frame, landmarks)
+
+
+            if(landmarks[11].visibility > 0.5 and landmarks[13].visibility>0.5 and landmarks[15].visibility>0.5):
+                lm1 = landmarks[11]
+                lm2 = landmarks[13]
+                lm3 = landmarks[15]
+                a = calculate_angle((lm1.x,lm1.y),(lm2.x,lm2.y),(lm3.x,lm3.y))
+                if(a<min_angle):
+                    min_angle = a
+                    min_frame = frame
+
+                if(a>max_angle):
+                    max_angle = a
+                    max_frame = frame
+
+            if landmarks[13].visibility > 0.5:
+                lm = landmarks[13]
+                if(lm.z < minz):
+                    minz = lm.z
+                    
+                
+                if(lm.z > maxz):
+                    maxz = lm.z
+                    
+                
         
         cv2.imshow("Pose Landmarker ", frame)
 
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
+        frame += 1
+
+print(min_angle,max_angle)
+print(min_frame,max_frame)
+
+plt.imshow(min_frame)
+plt.show()
+
+plt.imshow(max_frame)
+plt.show()
 
 cap.release()
 cv2.destroyAllWindows()
