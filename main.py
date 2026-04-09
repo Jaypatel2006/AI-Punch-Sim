@@ -5,7 +5,7 @@ from mediapipe.tasks import python
 from mediapipe.tasks.python import vision
 import matplotlib.pyplot as plt
 
-model_path = r"D:\college\AI_Project\models\pose_landmarker_heavy.task"
+model_path = "/Users/dvs/Project/AI/Repo/models/pose_landmarker_heavy.task"
 
 BaseOptions = mp.tasks.BaseOptions
 PoseLandmarker = mp.tasks.vision.PoseLandmarker
@@ -29,7 +29,7 @@ options = PoseLandmarkerOptions(
     running_mode=VisionRunningMode.IMAGE
 )
 
-cap = cv2.VideoCapture(1)
+cap = cv2.VideoCapture(0)
 
 minz = 10
 maxz = -10
