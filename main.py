@@ -45,20 +45,16 @@ POSE_CONNECTIONS = [
     (25,27),(27,29),(29,31),(26,28),(28,30),(30,32)
 ]
 
-options = PoseLandmarkerOptions(
-    base_options=BaseOptions(model_asset_path=model_path),
-    running_mode=VisionRunningMode.IMAGE
-)
+PUNCH_EXTEND_THRESH  = 155
+PUNCH_RETRACT_THRESH = 110
+PUNCH_SPEED_THRESH   = 200
+BLOCK_WRIST_NOSE_Y   = 0.0
+BLOCK_HOLD_FRAMES    = 6
+COOLDOWN_S           = 0.4
 
-cap = cv2.VideoCapture(1)
+last_action_time = 0.0
+ACTION_COOLDOWN  = 0.3
 
-minz = 10
-maxz = -10
-min_frame = 0
-max_frame = 0
-frame_no = 0
-min_angle = 180
-max_angle = 0
 
 def calculate_angle(p1, p2, p3):
     v1 = np.array(p1) - np.array(p2)
@@ -195,11 +191,10 @@ def draw_hud(frame, left, right, l_angle, r_angle):
 
 options = PoseLandmarkerOptions(
     base_options=BaseOptions(model_asset_path=model_path),
-    running_mode=VisionRunningMode.VIDEO # Changed from IMAGE to VIDEO
+    running_mode=VisionRunningMode.IMAGE
 )
 
-# --- 3. UPDATE THE MAIN LOOP to handle timestamps and hold blocks ---
-cap = cv2.VideoCapture(1)  
+cap = cv2.VideoCapture(1)   # change to 0 if wrong camera
 cap.set(cv2.CAP_PROP_FRAME_WIDTH,  640)
 cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
 
@@ -207,9 +202,7 @@ left_arm  = ArmTracker("L", 11, 13, 15)
 right_arm = ArmTracker("R", 12, 14, 16)
 
 print("[CV] Running. Punch or block in front of the camera!")
-
-last_block_send_time = 0.0
-last_timestamp_ms = 0
+print("[CV] Press Q in this window to quit.")
 
 with PoseLandmarker.create_from_options(options) as landmarker:
     while cap.isOpened():
@@ -219,15 +212,7 @@ with PoseLandmarker.create_from_options(options) as landmarker:
 
         now    = time.time()
         rgb    = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        
-        # Video mode requires strictly increasing timestamps
-        frame_timestamp_ms = int(now * 1000)
-        if frame_timestamp_ms <= last_timestamp_ms:
-            frame_timestamp_ms = last_timestamp_ms + 1
-        last_timestamp_ms = frame_timestamp_ms
-
-        # Process frame
-        result = landmarker.detect_for_video(mp.Image(mp.ImageFormat.SRGB, rgb), frame_timestamp_ms)
+        result = landmarker.detect(mp.Image(mp.ImageFormat.SRGB, rgb))
 
         l_angle = r_angle = None
 
@@ -246,11 +231,8 @@ with PoseLandmarker.create_from_options(options) as landmarker:
             if r_punch:
                 send_command("PUNCH")
 
-            # Continuously send "BLOCK" every 0.2 seconds if holding the pose
-            if left_arm.blocking or right_arm.blocking:
-                if now - last_block_send_time > 0.2:
-                    send_command("BLOCK")
-                    last_block_send_time = now
+            if left_arm.just_blocked or right_arm.just_blocked:
+                send_command("BLOCK")
 
         draw_hud(frame, left_arm, right_arm, l_angle, r_angle)
         cv2.imshow("Pose Controller", frame)

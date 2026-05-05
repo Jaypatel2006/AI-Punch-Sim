@@ -19,6 +19,18 @@ font_med   = pygame.font.SysFont("couriernew", 28, bold=True)
 font_small = pygame.font.SysFont("couriernew", 20)
 font_tiny  = pygame.font.SysFont("couriernew", 16)
 
+
+ 
+PUNCH_EXTEND_THRESH  = 155
+PUNCH_RETRACT_THRESH = 110
+PUNCH_SPEED_THRESH   = 200
+BLOCK_WRIST_NOSE_Y   = 0.0
+BLOCK_HOLD_FRAMES    = 6
+COOLDOWN_S           = 0.4
+ 
+last_action_time = 0.0
+ACTION_COOLDOWN  = 0.3
+
 WHITE  = (255, 255, 255)
 BLACK  = (0, 0, 0)
 RED    = (220, 50, 50)
