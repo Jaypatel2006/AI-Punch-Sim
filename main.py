@@ -45,16 +45,20 @@ POSE_CONNECTIONS = [
     (25,27),(27,29),(29,31),(26,28),(28,30),(30,32)
 ]
 
-PUNCH_EXTEND_THRESH  = 155
-PUNCH_RETRACT_THRESH = 110
-PUNCH_SPEED_THRESH   = 200
-BLOCK_WRIST_NOSE_Y   = 0.0
-BLOCK_HOLD_FRAMES    = 6
-COOLDOWN_S           = 0.4
+options = PoseLandmarkerOptions(
+    base_options=BaseOptions(model_asset_path=model_path),
+    running_mode=VisionRunningMode.IMAGE
+)
 
-last_action_time = 0.0
-ACTION_COOLDOWN  = 0.3
+cap = cv2.VideoCapture(1)
 
+minz = 10
+maxz = -10
+min_frame = 0
+max_frame = 0
+frame_no = 0
+min_angle = 180
+max_angle = 0
 
 def calculate_angle(p1, p2, p3):
     v1 = np.array(p1) - np.array(p2)
