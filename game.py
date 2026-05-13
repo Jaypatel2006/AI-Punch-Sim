@@ -38,8 +38,6 @@ BLUE   = (50, 120, 220)
 YELLOW = (255, 220, 50)
 ORANGE = (255, 140, 0)
 GRAY   = (130, 130, 130)
-
-# ── Shared state ──────────────────────────────────────────────────────────────
 command      = None
 command_lock = threading.Lock()
 cv_connected = False
@@ -159,7 +157,7 @@ class Fighter:
             self.state_timer = 40
             print("[GAME] BLOCK executed")
 
-        # ── Keyboard fallback ─────────────────────────────────────────────────
+        
         k = self.keys
         if kp[k["punch"]] and self.state not in ("punching", "blocking", "hurt"):
             self.state        = "punching"
@@ -407,7 +405,7 @@ def main():
             if end_timer <= 0:
                 p1.reset_round()
                 p2.reset_round()
-                p2.epsilon = 1
+                p2.epsilon = 0.5
                 rounds_played += 1
                 round_over = False
 

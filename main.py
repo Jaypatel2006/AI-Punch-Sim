@@ -6,7 +6,6 @@ import socket
 from collections import deque
 
 
-# ── Socket: auto-retry until game is ready ────────────────────────────────────
 def connect_to_game():
     while True:
         try:
@@ -30,7 +29,10 @@ def send_command(cmd):
         print(f"[CV] Send failed: {e} — reconnecting...")
         client = connect_to_game()
 
-model_path = r"D:\college\AI_Project\models\pose_landmarker_lite.task"
+import os
+
+base_dir = os.path.dirname(__file__)
+model_path = os.path.join(base_dir, "models", "pose_landmarker_lite.task")
 
 BaseOptions           = mp.tasks.BaseOptions
 PoseLandmarker        = mp.tasks.vision.PoseLandmarker

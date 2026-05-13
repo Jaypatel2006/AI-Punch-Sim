@@ -1,0 +1,7 @@
+Steps to Run :
+
+1. unzip the given zip file
+
+2. execute - "pip install -r requirements.txt" command on your terminal
+
+3. run game.py then run main.py (game.py should be executed first)
